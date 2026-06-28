@@ -12,7 +12,7 @@ def validate_csrf_token(request: Request, token: str) -> bool:
     cookie_token = request.cookies.get("csrf_token")
     if not cookie_token:
         return False
-    return secrets.compare_dynamic(cookie_token, token)
+    return secrets.compare_digest(cookie_token, token)
 
 
 def get_csrf_token_from_header(request: Request) -> Optional[str]:

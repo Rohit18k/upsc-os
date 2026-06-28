@@ -69,3 +69,8 @@ docker/data/postgres/
 *.key
 *.cert
 secrets/
+
+# Databases
+*.db
+test.db
+

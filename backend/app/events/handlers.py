@@ -1,4 +1,7 @@
+import logging
 from typing import Any, Callable, Dict, List
+
+logger = logging.getLogger("events")
 
 EventHandler = Callable[..., Any]
 
@@ -19,7 +22,16 @@ class EventBus:
     async def publish(self, event: str, **data: Any) -> None:
         handlers = self._handlers.get(event, [])
         for handler in handlers:
-            await handler(event=event, data=data)
+            try:
+                await handler(event=event, data=data)
+            except Exception as e:
+                # Error isolation: one failing handler must not crash others
+                logger.error(
+                    f"Event handler failed: event={event}, "
+                    f"handler={handler.__name__ if hasattr(handler, '__name__') else str(handler)}, "
+                    f"error={e}",
+                    exc_info=True,
+                )
 
 
 event_bus = EventBus()

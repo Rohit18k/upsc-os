@@ -181,8 +181,37 @@ services:
       - dev
     logging: *default-logging
 
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: upscos-prometheus
+    restart: unless-stopped
+    volumes:
+      - ../infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    logging: *default-logging
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: upscos-grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../infrastructure/monitoring/grafana-dashboard.json:/var/lib/grafana/dashboards/founder_dashboard.json:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin-password}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    logging: *default-logging
+
 volumes:
   postgres-data:
   redis-data:
   minio-data:
   pgadmin-data:
+  prometheus-data:
+  grafana-data:

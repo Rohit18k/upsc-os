@@ -3,6 +3,17 @@ import sys
 
 from app.config.settings import get_settings
 
+# Known-bad default secrets that must never be used in production
+_KNOWN_BAD_SECRETS = {
+    "change-this-to-a-random-secret-key-at-least-32-chars",
+    "change-this-to-a-random-encryption-key-32-characters",
+    "change-this-password",
+    "change-this-minio-secret",
+    "secret",
+    "password",
+    "changeme",
+}
+
 
 class EnvironmentValidator:
     REQUIRED_VARS = [
@@ -32,6 +43,27 @@ class EnvironmentValidator:
                 sys.exit(1)
             if not settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
                 print("FATAL: SECRET_KEY must be at least 32 characters in production", file=sys.stderr)
+                sys.exit(1)
+
+            # Reject known-bad default secrets
+            for var in cls.REQUIRED_VARS:
+                value = getattr(settings, var, "")
+                if isinstance(value, str) and value.lower().strip() in _KNOWN_BAD_SECRETS:
+                    print(
+                        f"FATAL: {var} is set to a known default value. "
+                        f"Generate a secure random value before deploying to production.",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+
+            # Validate CORS origins are not wildcard in production
+            if "*" in settings.CORS_ORIGINS:
+                print("FATAL: CORS_ORIGINS must not contain '*' in production", file=sys.stderr)
+                sys.exit(1)
+
+            # Validate allowed hosts are not wildcard in production
+            if "*" in settings.ALLOWED_HOSTS or "0.0.0.0" in settings.ALLOWED_HOSTS:
+                print("FATAL: ALLOWED_HOSTS must not contain '*' or '0.0.0.0' in production", file=sys.stderr)
                 sys.exit(1)
 
     @classmethod

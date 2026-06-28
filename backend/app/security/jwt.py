@@ -9,6 +9,9 @@ from app.core.exception_handlers import AuthenticationError
 
 settings = get_settings()
 
+JWT_ISSUER = "upscos-api"
+JWT_AUDIENCE = "upscos-client"
+
 
 def create_access_token(
     subject: str,
@@ -25,6 +28,8 @@ def create_access_token(
         "exp": now + expires_delta,
         "jti": str(uuid.uuid4()),
         "type": "access",
+        "iss": JWT_ISSUER,
+        "aud": JWT_AUDIENCE,
     }
     if extra_claims:
         claims.update(extra_claims)
@@ -43,13 +48,21 @@ def create_refresh_token(subject: str, expires_delta: Optional[timedelta] = None
         "exp": now + expires_delta,
         "jti": str(uuid.uuid4()),
         "type": "refresh",
+        "iss": JWT_ISSUER,
+        "aud": JWT_AUDIENCE,
     }
     return jwt.encode(claims, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def decode_token(token: str, token_type: str = "access") -> Dict[str, Any]:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+            audience=JWT_AUDIENCE,
+            issuer=JWT_ISSUER,
+        )
         if payload.get("type") != token_type:
             raise AuthenticationError("Invalid token type")
         return payload

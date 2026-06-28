@@ -8,6 +8,13 @@ from starlette.responses import Response
 from app.core.logging import audit_logger
 
 
+def sanitize_log_value(val: str) -> str:
+    # Remove newlines, carriage returns, and unprintable characters to prevent log injection
+    if not val:
+        return ""
+    return "".join(c for c in val if c.isprintable() and c not in ("\n", "\r"))
+
+
 class AuditMiddleware(BaseHTTPMiddleware):
     AUDIT_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 
@@ -22,17 +29,20 @@ class AuditMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
 
         if response.status_code < 500:
+            clean_path = sanitize_log_value(request.url.path)
+            clean_method = sanitize_log_value(request.method)
             audit_logger.log(
-                action=f"{request.method}_{request.url.path}",
-                resource=request.url.path,
+                action=f"{clean_method}_{clean_path}",
+                resource=clean_path,
                 user_id=user_id,
                 ip_address=client_ip,
                 correlation_id=correlation_id,
                 details={
-                    "method": request.method,
-                    "path": request.url.path,
+                    "method": clean_method,
+                    "path": clean_path,
                     "status_code": response.status_code,
                 },
             )
 
         return response
+

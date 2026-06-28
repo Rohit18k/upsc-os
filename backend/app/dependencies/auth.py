@@ -53,7 +53,8 @@ class RequirePermissions:
         except ValueError:
             raise AuthorizationError("Invalid role")
 
-        user_permissions = {Permission(p) for p in role}
+        from app.security.rbac import ROLE_PERMISSIONS
+        user_permissions = ROLE_PERMISSIONS.get(role, set())
         if not require_permission(self.permissions, user_permissions):
             raise AuthorizationError("Insufficient permissions")
 

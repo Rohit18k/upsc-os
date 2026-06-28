@@ -41,7 +41,9 @@ class BaseRepository(Generic[ModelType]):
         order_by: Optional[str] = None,
         descending: bool = False,
     ) -> tuple[List[ModelType], int]:
-        count_stmt = select(self.model)
+        # Count query using SELECT COUNT(*) — O(1) instead of loading all rows
+        from sqlalchemy import func as sa_func
+        count_stmt = select(sa_func.count()).select_from(self.model)
         stmt = select(self.model)
 
         if filters:
@@ -51,7 +53,7 @@ class BaseRepository(Generic[ModelType]):
                 stmt = stmt.where(condition)
 
         count_result = await self.session.execute(count_stmt)
-        total = len(count_result.scalars().all())
+        total = count_result.scalar() or 0
 
         if order_by:
             order_column = getattr(self.model, order_by)
