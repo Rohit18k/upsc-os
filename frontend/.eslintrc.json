@@ -1,0 +1,10 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-unused-vars": "off",
+    "react-hooks/exhaustive-deps": "warn",
+    "react/display-name": "off",
+    "no-duplicate-imports": "error"
+  }
+}

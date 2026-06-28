@@ -1,0 +1,20 @@
+# Default owners
+* @upsc-os/engineering
+
+# Backend
+/backend/ @upsc-os/backend
+
+# Frontend
+/frontend/ @upsc-os/frontend
+
+# Infrastructure
+/infrastructure/ @upsc-os/infrastructure
+/docker/ @upsc-os/infrastructure
+/.github/ @upsc-os/infrastructure
+
+# Security
+/SECURITY.md @upsc-os/security
+/backend/app/security/ @upsc-os/security
+
+# Documentation
+/docs/ @upsc-os/docs

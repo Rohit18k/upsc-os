@@ -1,0 +1,22 @@
+* text=auto eol=lf
+
+*.py text diff=python
+*.ts text diff=typescript
+*.tsx text diff=typescript
+*.js text diff=javascript
+*.jsx text diff=javascript
+*.json text diff=json
+*.yaml text diff=yaml
+*.yml text diff=yaml
+*.md text diff=markdown
+*.css text diff=css
+*.scss text diff=css
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary

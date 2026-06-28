@@ -1,0 +1,56 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "docker/**"
+      - ".github/workflows/docker-build.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "docker/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./docker/Dockerfile.backend
+          push: false
+          tags: upscos-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./docker/Dockerfile.frontend
+          push: false
+          tags: upscos-frontend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build celery worker
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./docker/Dockerfile.celery
+          push: false
+          tags: upscos-celery:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

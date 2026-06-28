@@ -1,0 +1,50 @@
+{
+  "name": "UPSC OS Development",
+  "dockerComposeFile": ["../docker/docker-compose.yml"],
+  "service": "backend",
+  "workspaceFolder": "/app",
+  "forwardPorts": [3000, 8000, 5432, 6379, 9000, 9001, 5050],
+  "portsAttributes": {
+    "3000": { "label": "Frontend" },
+    "8000": { "label": "Backend API" },
+    "5432": { "label": "PostgreSQL" },
+    "6379": { "label": "Redis" },
+    "9000": { "label": "MinIO API" },
+    "9001": { "label": "MinIO Console" },
+    "5050": { "label": "pgAdmin" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.ruff",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "batisteo.vscode-django",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "GitHub.vscode-pull-request-github",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker",
+        "yzhang.markdown-all-in-one"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": ".venv/bin/python",
+        "python.linting.enabled": true,
+        "python.formatting.provider": "black",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit",
+          "source.organizeImports": "explicit"
+        },
+        "editor.renderWhitespace": "boundary",
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true
+      }
+    }
+  },
+  "postCreateCommand": "pip install -r requirements-dev.txt && pre-commit install"
+}

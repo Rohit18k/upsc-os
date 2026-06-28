@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.black-formatter",
+    "ms-python.ruff",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "github.vscode-pull-request-github",
+    "eamodio.gitlens",
+    "ms-azuretools.vscode-docker",
+    "yzhang.markdown-all-in-one"
+  ]
+}

@@ -1,0 +1,35 @@
+name: Dependency Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Python dependencies
+        uses: pyupio/safety-action@v1
+        with:
+          api-key: ${{ secrets.SAFETY_API_KEY }}
+          args: -r backend/requirements.txt
+
+      - name: Check Node.js dependencies
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+      - name: Dependabot alerts
+        uses: github/codeql-action/analyze@v3
+
+      - name: Check for outdated dependencies
+        run: |
+          cd frontend
+          npm outdated --long || true

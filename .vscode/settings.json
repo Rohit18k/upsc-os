@@ -1,0 +1,57 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.renderWhitespace": "boundary",
+  "editor.rulers": [88, 100],
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.next": true,
+    "**/node_modules": true,
+    "**/.venv": true,
+    "**/venv": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/htmlcov": true
+  },
+  "python.defaultInterpreterPath": ".venv/bin/python",
+  "python.linting.enabled": true,
+  "python.formatting.provider": "black",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  "sqltools.connections": [
+    {
+      "name": "UPSC OS Database",
+      "driver": "PostgreSQL",
+      "server": "localhost",
+      "port": 5432,
+      "database": "upscos",
+      "username": "upscos",
+      "password": ""
+    }
+  ]
+}
