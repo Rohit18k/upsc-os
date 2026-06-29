@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { api } from "@/services/api";
-import { useAuthStore } from "@/store/auth-store";
 import {
   MessageSquare,
   Sparkles,
@@ -12,6 +11,12 @@ import {
   HelpCircle,
   FileText,
   User,
+  Mic,
+  MicOff,
+  Compass,
+  Bookmark,
+  Pin,
+  CheckCircle,
 } from "lucide-react";
 
 interface Message {
@@ -22,17 +27,30 @@ interface Message {
   actions?: string[];
 }
 
-export default function AITutorPage() {
+export default function AIMentorPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "init",
       sender: "tutor",
-      text: "Hello! I am your UPSC Socratic Tutor. I analyze your Digital Twin telemetry profile to guide your understanding.\n\nHow can I help you master your Polity or Economy concepts today?"
+      text: "Hello! I am your personal UPSC Socratic Mentor. I have analyzed your study telemetry and digital twin graph.\n\nHow can I help you master your Polity or Economy concepts today?"
     }
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+  
+  // Modes: "socratic", "examiner", "answer-review", "gap-simulation"
   const [activeMode, setActiveMode] = useState<string>("socratic");
+  
+  // Voice recording skeleton state
+  const [isRecording, setIsRecording] = useState(false);
+
+  // Pinned chats / conversation history mock list
+  const [pinnedChats, setPinnedChats] = useState<Array<{ id: string; title: string; active: boolean }>>([
+    { id: "c_1", title: "Preamble basic structure doctrine", active: true },
+    { id: "c_2", title: "RBI credit control policies", active: false },
+    { id: "c_3", title: "Article 21 & privacy right boundaries", active: false }
+  ]);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -69,8 +87,8 @@ export default function AITutorPage() {
       const tutorMsg: Message = {
         id: `tutor_${uuid()}`,
         sender: "tutor",
-        text: replyData.reply,
-        citation: replyData.citation,
+        text: replyData.reply || "Let's break down this concept step-by-step. What subject area is this related to?",
+        citation: replyData.citation || "Polity Basics, Chapter 2",
         actions: replyData.suggested_actions
       };
       
@@ -81,7 +99,7 @@ export default function AITutorPage() {
         {
           id: `tutor_err_${uuid()}`,
           sender: "tutor",
-          text: "I apologize, but I encountered an error retrieving your digital twin data. Let's try again."
+          text: "I apologize, but I encountered an error communicating with the reasoning server. Let's try rephrasing the question."
         }
       ]);
     } finally {
@@ -89,130 +107,186 @@ export default function AITutorPage() {
     }
   };
 
-  const handleQuickTrigger = (text: string, mode: string) => {
-    setActiveMode(mode);
-    handleSendMessage(text);
+  const handleToggleVoice = () => {
+    setIsRecording(!isRecording);
+    if (!isRecording) {
+      // Simulate speech detection input after 3s
+      setTimeout(() => {
+        setInputMessage("Explain the Basic Structure Doctrine in relation to Kesavananda Bharati case");
+        setIsRecording(false);
+      }, 3000);
+    }
   };
 
   const uuid = () => Math.random().toString(36).substring(2, 9);
 
   return (
-    <div className="h-[78vh] flex flex-col animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="border-b border-zinc-800 pb-4 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-white flex items-center gap-3">
-            <MessageSquare className="h-8 w-8 text-indigo-400" /> Socratic AI Tutor
-          </h1>
-          <p className="text-sm text-zinc-400">Context-grounded assistant guiding concepts, prerequisites, and evaluations.</p>
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[78vh]">
+      {/* Sidebar Chat list */}
+      <div className="rounded-xl border border-zinc-900 bg-zinc-900/20 p-4 flex flex-col justify-between space-y-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-500 font-mono">Pinned Sessions</h3>
+            <Pin className="h-3.5 w-3.5 text-zinc-500" />
+          </div>
+
+          <div className="space-y-2">
+            {pinnedChats.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => {
+                  setPinnedChats(pinnedChats.map((p) => ({ ...p, active: p.id === c.id })));
+                  if (c.id === "c_1") {
+                    setMessages([
+                      { id: "init", sender: "tutor", text: "Welcome back! Let's resume our analysis of the Preamble basic structure doctrine." }
+                    ]);
+                  } else {
+                    setMessages([
+                      { id: "init", sender: "tutor", text: `Ready to master: ${c.title}? Ask me any doubts.` }
+                    ]);
+                  }
+                }}
+                className={`w-full text-left p-2.5 rounded-lg text-xs font-medium truncate transition ${
+                  c.active
+                    ? "bg-zinc-900 text-white border border-zinc-800"
+                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/30"
+                }`}
+              >
+                {c.title}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Shortcuts widgets */}
+        <div className="space-y-3 border-t border-zinc-900 pt-4">
+          <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider font-mono">Mission Shortcuts</h4>
+          <button
+            onClick={() => handleSendMessage("Evaluate my weak subjects profile")}
+            className="w-full text-left p-2 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] text-zinc-400 hover:text-white transition"
+          >
+            Review Weak Concept telemetry
+          </button>
+          <button
+            onClick={() => handleSendMessage("Create a mock evaluation for Polity Basics")}
+            className="w-full text-left p-2 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] text-zinc-400 hover:text-white transition"
+          >
+            Generate Socratic evaluation
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-0 pt-6">
-        {/* Sidebar accelerators */}
-        <div className="space-y-4 lg:col-span-1">
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-4 space-y-4">
-            <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-500 flex items-center gap-2">
-              <Sparkles className="h-3.5 w-3.5 text-indigo-400" /> Socratic Actions
-            </h3>
-            
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => handleQuickTrigger("Explain Monetary Policy Instruments", "socratic")}
-                className="w-full text-left p-3 bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-700 rounded-lg text-xs text-zinc-300 transition"
-              >
-                Explain Monetary Policy (Socratic)
-              </button>
-
-              <button
-                onClick={() => handleQuickTrigger("Evaluate my answer about Kesavananda Bharati Preamble ruling", "evaluate")}
-                className="w-full text-left p-3 bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-700 rounded-lg text-xs text-zinc-300 transition"
-              >
-                Evaluate My Kesavananda Essay
-              </button>
-
-              <button
-                onClick={() => handleQuickTrigger("Explain the Kesavananda Bharati Case significance", "explain")}
-                className="w-full text-left p-3 bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-700 rounded-lg text-xs text-zinc-300 transition"
-              >
-                Explain Kesavananda Case Laws
-              </button>
-            </div>
-          </div>
+      {/* Main chat interface */}
+      <div className="lg:col-span-3 rounded-xl border border-zinc-900 bg-zinc-900/20 flex flex-col justify-between overflow-hidden">
+        {/* Chat modes controller header */}
+        <div className="flex border-b border-zinc-900 bg-zinc-900/40 p-2 gap-1.5 overflow-x-auto">
+          {[
+            { id: "socratic", label: "Socratic Coach" },
+            { id: "examiner", label: "Examiner Mode" },
+            { id: "answer-review", label: "Answer Review" },
+            { id: "gap-simulation", label: "Gap Analysis" },
+          ].map((mode) => (
+            <button
+              key={mode.id}
+              onClick={() => setActiveMode(mode.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMode === mode.id
+                  ? "bg-zinc-800 text-white border border-zinc-700"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              {mode.label}
+            </button>
+          ))}
         </div>
 
-        {/* Chat message pane */}
-        <div className="lg:col-span-3 flex flex-col border border-zinc-800 rounded-xl bg-zinc-900/10 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {messages.map((msg) => {
-              const isTutor = msg.sender === "tutor";
-              return (
-                <div key={msg.id} className={`flex gap-4 ${isTutor ? "" : "flex-row-reverse"}`}>
-                  {/* User icon */}
-                  <div className={`h-8 w-8 rounded-full border flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
-                    isTutor ? "bg-zinc-800 border-zinc-700 text-indigo-400" : "bg-indigo-500 border-indigo-400 text-white"
-                  }`}>
-                    {isTutor ? <Sparkles className="h-4 w-4" /> : <User className="h-4 w-4" />}
-                  </div>
+        {/* Messages scroll zone */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex gap-3 max-w-[85%] ${
+                msg.sender === "student" ? "ml-auto flex-row-reverse" : "mr-auto"
+              }`}
+            >
+              {/* Profile icon */}
+              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold border flex-shrink-0 ${
+                msg.sender === "student"
+                  ? "bg-zinc-800 border-zinc-700 text-indigo-400"
+                  : "bg-indigo-950/20 border-indigo-900 text-indigo-400"
+              }`}>
+                {msg.sender === "student" ? "S" : "M"}
+              </div>
 
-                  {/* Bubble */}
-                  <div className="space-y-2 max-w-[80%]">
-                    <div className={`rounded-xl p-4 text-sm leading-relaxed border ${
-                      isTutor ? "bg-zinc-900/40 border-zinc-800 text-zinc-200" : "bg-zinc-950 border-zinc-850 text-white"
-                    }`}>
-                      <div className="whitespace-pre-wrap">{msg.text}</div>
-                    </div>
-
-                    {/* Citations */}
-                    {isTutor && msg.citation && (
-                      <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-mono">
-                        <BookOpen className="h-3 w-3 text-zinc-500" />
-                        <span>Source Citation: {msg.citation}</span>
-                      </div>
-                    )}
-
-                    {/* Suggested follow-up actions */}
-                    {isTutor && msg.actions && msg.actions.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-1.5">
-                        {msg.actions.map((act) => (
-                          <button
-                            key={act}
-                            onClick={() => handleQuickTrigger(act, activeMode)}
-                            className="text-[10px] font-semibold text-indigo-455 bg-indigo-950/20 border border-indigo-900/60 px-2.5 py-1 rounded hover:bg-indigo-950/40 transition"
-                          >
-                            {act}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+              {/* Message content */}
+              <div className="space-y-2">
+                <div className={`rounded-xl px-4 py-3 text-xs leading-relaxed ${
+                  msg.sender === "student"
+                    ? "bg-zinc-900 text-zinc-100 border border-zinc-850"
+                    : "bg-zinc-950/40 text-zinc-300 border border-zinc-900"
+                }`}>
+                  <p className="whitespace-pre-line">{msg.text}</p>
                 </div>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </div>
 
-          {/* Form input */}
-          <div className="border-t border-zinc-800 p-4 bg-zinc-900/20 flex gap-2">
+                {/* Citation cards */}
+                {msg.citation && (
+                  <div className="flex items-center gap-1.5 text-[9px] text-zinc-500 font-mono pl-1">
+                    <BookOpen className="h-3 w-3" /> Citation: <span className="text-zinc-400">{msg.citation}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {isSending && (
+            <div className="flex gap-3 max-w-[85%] mr-auto items-center">
+              <div className="h-8 w-8 rounded-full bg-indigo-950/20 border border-indigo-900 text-indigo-400 flex items-center justify-center">
+                <Loader2 className="h-4.5 w-4.5 animate-spin" />
+              </div>
+              <p className="text-[10px] text-zinc-500 font-mono animate-pulse">Mentor is formulating thoughts...</p>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input panel with voice mic trigger */}
+        <div className="border-t border-zinc-900 p-3 bg-zinc-900/20">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendMessage();
+            }}
+            className="flex items-center gap-2"
+          >
+            {/* Voice microphone trigger button */}
+            <button
+              type="button"
+              onClick={handleToggleVoice}
+              className={`p-2.5 rounded-lg border border-zinc-900 transition flex-shrink-0 ${
+                isRecording
+                  ? "bg-red-950/40 border-red-900 text-red-400 animate-pulse"
+                  : "bg-zinc-950 text-zinc-500 hover:text-zinc-300"
+              }`}
+              title="Voice Ready Mic"
+            >
+              {isRecording ? <Mic className="h-4.5 w-4.5" /> : <MicOff className="h-4.5 w-4.5" />}
+            </button>
+
             <input
               type="text"
-              placeholder="Ask the tutor a question about Preamble, RBI or Inflation..."
+              placeholder={isRecording ? "Listening to your voice input..." : "Ask your mentor or type command shortcuts..."}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSendMessage();
-              }}
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition"
-              disabled={isSending}
+              disabled={isSending || isRecording}
+              className="flex-1 bg-zinc-950 border border-zinc-900 rounded-lg px-3 py-2.5 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-zinc-800"
             />
             <button
-              onClick={() => handleSendMessage()}
+              type="submit"
               disabled={isSending || !inputMessage.trim()}
-              className="rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-950 p-3 transition disabled:opacity-50 flex items-center justify-center"
+              className="p-2.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-950 disabled:opacity-50 flex-shrink-0"
             >
-              {isSending ? <Loader2 className="h-4 w-4 animate-spin text-zinc-950" /> : <Send className="h-4 w-4" />}
+              <Send className="h-4 w-4" />
             </button>
-          </div>
+          </form>
         </div>
       </div>
     </div>

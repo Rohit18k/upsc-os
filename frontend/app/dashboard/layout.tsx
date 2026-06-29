@@ -90,6 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         else if (key === "i") targetHref = "/dashboard/improve";
         else if (key === "t") targetHref = "/dashboard/tutor";
         else if (key === "s") targetHref = "/dashboard/profile";
+        else if (key === "a") targetHref = "/dashboard/analytics";
 
         if (targetHref) {
           e.preventDefault();
@@ -129,8 +130,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push("/login");
   };
 
+  const sidebarItems = [...SIDEBAR_ITEMS];
+  if (user?.role === "admin" || user?.role === "manager") {
+    sidebarItems.push({
+      name: "Founder Analytics",
+      href: "/dashboard/analytics",
+      icon: Award,
+      shortcut: "G + A"
+    });
+  }
+
   // Filter commands for palette
-  const filteredCommands = SIDEBAR_ITEMS.filter((item) =>
+  const filteredCommands = sidebarItems.filter((item) =>
     item.name.toLowerCase().includes(commandQuery.toLowerCase())
   );
 
@@ -159,7 +170,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Sidebar Menu items */}
           <nav className="space-y-1">
-            {SIDEBAR_ITEMS.map((item) => {
+            {sidebarItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <button
